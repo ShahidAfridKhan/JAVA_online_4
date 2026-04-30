@@ -1,0 +1,99 @@
+import java.util.*;
+import java.io.*;
+
+class DeliveryManager {
+    private List<Delivery> deliveries = new ArrayList<>();
+    private Map<String, Delivery> map = new HashMap<>();
+
+    public void loadFromFile(String file) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                try {
+                    String[] parts = line.split(",");
+                    String id = parts[0];
+                    String type = parts[1];
+                    String name = parts[2];
+                    double dist = Double.parseDouble(parts[3]);
+
+                    Delivery d = DeliveryFactory.createDelivery(id, type, name, dist);
+                    deliveries.add(d);
+                    map.put(id, d);
+
+                } catch (Exception e) {
+                    System.out.println("Invalid line skipped: " + line);
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printAll() {
+        deliveries.forEach(System.out::println);
+    }
+
+    public void sortByCost() {
+        deliveries.sort(new CostComparator());
+    }
+
+    public void processDeliveries() {
+        PriorityQueue<Delivery> pq = new PriorityQueue<>(
+                (a, b) -> b.getPriority() - a.getPriority()
+        );
+
+        pq.addAll(deliveries);
+
+        while (!pq.isEmpty()) {
+            Delivery d = pq.poll();
+            System.out.println("Processing: " + d.getId() +
+                    (d.getPriority() == 3 ? " (High Priority)" : ""));
+        }
+    }
+
+    public double getTotalRevenue() {
+        return deliveries.stream()
+                .mapToDouble(Delivery::calculateCost)
+                .sum();
+    }
+
+    public Map<String, Integer> getDeliveryCountByType() {
+        Map<String, Integer> result = new HashMap<>();
+
+        for (Delivery d : deliveries) {
+            String type = d.getClass().getSimpleName().replace("Delivery", "");
+            result.put(type, result.getOrDefault(type, 0) + 1);
+        }
+
+        return result;
+    }
+
+    public List<Delivery> getTopNDistancedDeliveries(int n) {
+        return deliveries.stream()
+                .sorted((a, b) -> Double.compare(b.getDistance(), a.getDistance()))
+                .limit(n)
+                .toList();
+    }
+
+    public void serialize(String file) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+            oos.writeObject(deliveries);
+            System.out.println("Data saved successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Delivery> deserialize(String file) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            List<Delivery> list = (List<Delivery>) ois.readObject();
+            System.out.println("Restored " + list.size() + " deliveries.");
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+}
