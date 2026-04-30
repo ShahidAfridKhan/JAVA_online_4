@@ -1,0 +1,13 @@
+import java.util.Comparator;
+
+class CostComparator implements Comparator<Delivery> {
+    public int compare(Delivery a, Delivery b) {
+        return Double.compare(b.calculateCost(), a.calculateCost());
+    }
+}
+
+class DistanceComparator implements Comparator<Delivery> {
+    public int compare(Delivery a, Delivery b) {
+        return Double.compare(a.getDistance(), b.getDistance());
+    }
+}
