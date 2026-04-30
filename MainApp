@@ -1,0 +1,32 @@
+public class MainApp {
+    public static void main(String[] args) {
+
+        DeliveryManager manager = new DeliveryManager();
+
+        manager.loadFromFile("input.txt");
+
+        System.out.println("===== All Deliveries =====");
+        manager.printAll();
+
+        System.out.println("\n===== Sorted by Cost (Desc) =====");
+        manager.sortByCost();
+        manager.printAll();
+
+        System.out.println("\n===== Processing Queue =====");
+        manager.processDeliveries();
+
+        System.out.println("\n===== Revenue =====");
+        System.out.println("Total Revenue: " + manager.getTotalRevenue());
+
+        System.out.println("\n===== Delivery Count By Type =====");
+        manager.getDeliveryCountByType().forEach((k, v) ->
+                System.out.println(k + ": " + v)
+        );
+
+        System.out.println("\n===== Serialization =====");
+        manager.serialize("deliveries.ser");
+
+        System.out.println("\n===== After Deserialization =====");
+        manager.deserialize("deliveries.ser");
+    }
+}
