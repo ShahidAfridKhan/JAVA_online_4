@@ -1,0 +1,62 @@
+import java.io.*;
+
+enum Status {
+    CREATED, IN_TRANSIT, DELIVERED
+}
+
+interface Trackable {
+    void updateStatus(String status);
+    String getStatus();
+}
+
+abstract class Delivery implements Serializable, Trackable {
+    private static final long serialVersionUID = 1L;
+
+    protected String deliveryId;
+    protected String customerName;
+    protected double distance;
+    protected Status status;
+
+    public Delivery(String deliveryId, String customerName, double distance) {
+        this.deliveryId = deliveryId;
+        this.customerName = customerName;
+        this.distance = distance;
+        this.status = Status.CREATED;
+    }
+
+    public abstract double calculateCost();
+    public abstract int getPriority();
+
+    @Override
+    public void updateStatus(String newStatus) {
+        Status next = Status.valueOf(newStatus);
+
+        if (this.status == Status.CREATED && next == Status.IN_TRANSIT ||
+            this.status == Status.IN_TRANSIT && next == Status.DELIVERED) {
+            this.status = next;
+        } else {
+            throw new IllegalStateException("Invalid status transition!");
+        }
+    }
+
+    @Override
+    public String getStatus() {
+        return status.toString();
+    }
+
+    public String getId() {
+        return deliveryId;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    @Override
+    public String toString() {
+        return deliveryId + " | " + this.getClass().getSimpleName().replace("Delivery", "") +
+                " | Cost: " + calculateCost() +
+                " | Priority: " + getPriority() +
+                " | Status: " + status;
+    }
+}
